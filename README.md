@@ -6,7 +6,7 @@ This crate is a simple helper providing a way to receive device updates notifica
 
 ```toml
 [target.'cfg(target_os = "macos")'.dependencies]
-coremidi-hotplug-notification = "0.1.0"
+coremidi-hotplug-notification = "0.1.1"
 ```
 
 ## Usage
@@ -15,7 +15,7 @@ coremidi-hotplug-notification = "0.1.0"
 fn main() {
     #[cfg(target_os = "macos")]
     // Register for device update notifications
-    midi_device_updates::receive_device_updates(|| {
+    coremidi_hotplug_notification::receive_device_updates(|| {
         println!("A MIDI device was connected or disconnected.");
         // Insert your handling logic here
     }).expect("Failed to register for MIDI device updates");
