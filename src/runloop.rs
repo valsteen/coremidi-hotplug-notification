@@ -1,25 +1,28 @@
-use std::error::Error;
-use std::sync::mpsc::{channel, sync_channel};
-use std::sync::{Arc, Mutex, PoisonError};
+use std::{
+    error::Error,
+    sync::{
+        mpsc::{channel, sync_channel},
+        Arc, Mutex, PoisonError,
+    },
+};
 
 use core_foundation::base::OSStatus;
-use std::thread;
-use std::time::Duration;
+use std::{thread, time::Duration};
 
 use core_foundation::runloop::CFRunLoop;
 use coremidi::{Client, Notification, Sources};
 use log::{error, info};
 
-static SANITY_CHECK_ERROR: &str = "MIDIClientCreate was called before receive_device_updates. \
-    This often occurs when using midir::MidiInput::new, which prematurely sets the thread \
-    for receiving MIDI device notifications.";
+static SANITY_CHECK_ERROR: &str = "MIDIClientCreate was called before receive_device_updates. This often occurs when \
+                                   using midir::MidiInput::new, which prematurely sets the thread for receiving MIDI \
+                                   device notifications.";
 
 static VIRTUAL_DEVICE_NAME: &str = "device-detection-virtual-device";
 static CLIENT_DEVICE_NAME: &str = "device-detection-client";
 
 static CHANNEL_PANIC_MESSAGE: &str = "unable to communicate between notifier and main thread";
 
-pub(crate) type Callback = Arc<Mutex<Option<Box<dyn Fn() + 'static + Send + Sync>>>>;
+pub(crate) type Callback = Arc<Mutex<Option<Box<dyn Fn() + 'static + Send>>>>;
 
 pub(crate) fn osstatus_error(osstatus: OSStatus) -> String {
     format!("OSStatus {osstatus}")
@@ -43,7 +46,7 @@ pub(crate) fn start_notification_loop(
     return_client: bool,
 ) -> Result<(Callback, Option<Client>), Box<dyn Error + Send + Sync + 'static>> {
     let (send_new_device_notification, receive_new_device_notification) = channel();
-    let sanity_check_callback: Box<dyn Fn() + Send + Sync + 'static> =
+    let sanity_check_callback: Box<dyn Fn() + Send + 'static> =
         Box::new(move || send_new_device_notification.send(()).unwrap());
 
     let notification_callback = Arc::new(Mutex::new(Some(sanity_check_callback)));

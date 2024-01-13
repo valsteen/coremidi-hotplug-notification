@@ -3,12 +3,11 @@ mod runloop;
 use crate::runloop::{start_notification_loop, Callback};
 use coremidi::Client;
 use once_cell::sync::OnceCell;
-use std::error::Error;
-use std::sync::PoisonError;
+use std::{error::Error, sync::PoisonError};
 
 pub(crate) static DEVICE_UPDATE_TX: OnceCell<Callback> = OnceCell::new();
 
-fn handle_device_updates<T: Fn() + Send + Sync + 'static>(
+fn handle_device_updates<T: Fn() + Send + 'static>(
     device_update: T,
     get_client: bool,
 ) -> Result<Option<Client>, Box<dyn Error + Send + Sync + 'static>> {
@@ -40,7 +39,7 @@ fn handle_device_updates<T: Fn() + Send + Sync + 'static>(
 /// This can happen if `MIDIClientCreate` was called before `receive_device_updates`,  which sets the thread for receiving
 /// such notification from the OS. This would mean `midir::MidiInput::new` or similar would have been called before
 /// calling `receive_device_updates`.
-pub fn receive_device_updates<T: Fn() + Send + Sync + 'static>(
+pub fn receive_device_updates<T: Fn() + Send + 'static>(
     device_update: T,
 ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     handle_device_updates(device_update, false)?;
@@ -54,7 +53,7 @@ pub fn receive_device_updates<T: Fn() + Send + Sync + 'static>(
 /// same as `receive_device_updates`, may additionally fail if any of `get_client_and_receive_device_updates` or
 /// `receive_device_updates` was already called, because the client can only be obtained the first time the loop
 /// is run.
-pub fn get_client_and_receive_device_updates<T: Fn() + Send + Sync + 'static>(
+pub fn get_client_and_receive_device_updates<T: Fn() + Send + 'static>(
     device_update: T,
 ) -> Result<Client, Box<dyn Error + Send + Sync + 'static>> {
     handle_device_updates(device_update, true)?.ok_or_else(|| "Client was already initialized".into())
