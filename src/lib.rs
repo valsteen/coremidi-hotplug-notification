@@ -32,7 +32,7 @@ fn handle_device_updates<T: Fn() + Send + 'static>(
 /// # Arguments
 ///
 /// * `device_update`: The closure function that will be called when new devices are detected. Note that upon device
-/// changes, the callback may be called several times within milliseconds.
+///   changes, the callback may be called several times within milliseconds.
 ///
 /// # Errors
 /// A sanity check is performed before returning, and will fail if the eventloop fails to receive device notifications.
