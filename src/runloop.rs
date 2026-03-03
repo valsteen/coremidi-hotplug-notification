@@ -65,9 +65,7 @@ pub(crate) fn start_notification_loop(
             };
 
             let (send_get_new_devices_ready, receive_get_new_devices_ready) = sync_channel(0);
-            send_notifier_ready
-                .send(Ok((client, send_get_new_devices_ready)))
-                .expect(CHANNEL_PANIC_MESSAGE);
+            send_notifier_ready.send(Ok((client, send_get_new_devices_ready))).expect(CHANNEL_PANIC_MESSAGE);
 
             // note: client must not be dropped, or we won't receive notifications
             let _client = receive_get_new_devices_ready.recv().expect(CHANNEL_PANIC_MESSAGE);
@@ -85,23 +83,14 @@ pub(crate) fn start_notification_loop(
 
     let _virtual_source = client.virtual_source(VIRTUAL_DEVICE_NAME).map_err(osstatus_error)?;
 
-    let (send_to_thread, return_value) = if return_client {
-        (None, Some(client))
-    } else {
-        (Some(client), None)
-    };
+    let (send_to_thread, return_value) = if return_client { (None, Some(client)) } else { (Some(client), None) };
 
     send_get_new_devices_ready.send(send_to_thread)?;
 
     // we should get a notification shortly
-    receive_new_device_notification
-        .recv_timeout(Duration::from_secs(1))
-        .map_err(|_| SANITY_CHECK_ERROR)?;
+    receive_new_device_notification.recv_timeout(Duration::from_secs(1)).map_err(|_| SANITY_CHECK_ERROR)?;
 
-    if Sources
-        .into_iter()
-        .any(|s| s.name().map(|s| s == VIRTUAL_DEVICE_NAME).unwrap_or_default())
-    {
+    if Sources.into_iter().any(|s| s.name().map(|s| s == VIRTUAL_DEVICE_NAME).unwrap_or_default()) {
         Ok((notification_callback, return_value))
     } else {
         Err(SANITY_CHECK_ERROR.into())
