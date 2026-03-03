@@ -73,8 +73,8 @@ pub(crate) fn start_notification_loop(
             CFRunLoop::run_current();
             error!("CFRunLoop::run_current() returned, which is possibly a bug. The loop should never stop.");
 
-            // this resets the sender as empty, closing the channel assuming only the client held
-            // a reference. this helps detecting initialization issues
+            // This resets the sender as empty, closing the channel assuming only the client held
+            // a reference. This helps to detect initialization issues
             *notification_callback.lock().unwrap_or_else(PoisonError::into_inner) = None;
         }
     });
