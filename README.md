@@ -6,7 +6,7 @@ This crate is a simple helper providing a way to receive device updates notifica
 
 ```toml
 [target.'cfg(target_os = "macos")'.dependencies]
-coremidi-hotplug-notification = "0.1.1"
+coremidi-hotplug-notification = "0.1.4"
 ```
 
 ## Usage
